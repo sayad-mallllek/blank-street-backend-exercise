@@ -1,79 +1,44 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Description
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Technical Exercise: Order Management API
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+# Overview
 
-## Description
+This project is designed to allow 2 kinds of types of users (customers and admins) to facilitate running the store that is spread out on different branhces (locations)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+# Philosophy
 
-## Installation
+The intended philosophy was that customers were able to view the coffee shop locations and products, but needed to authenticate in order to create and track their orders.
+The store has multiple locations and each location has its own set of available products. The admins create the locations, products, etc...
+Each location would has a set amount of products (denoted by their quantity), and the orders would go to a specific location where it would check if the products their are sufficient to issue the order, and then process it for the customer.
+Each location has a set of opening hours and closing rules, where opening hours would be for example: "Mon => Fri : 9 AM => 10 PM". The closing rules would be the periods in which the location is offline (ex: public holidays).
+The idea behind this implementation comes from 2 projects that have a 90% similar mechanism and workflow (the first is [Eatsalad](eatsalad.com), while the other is confidential :/)
+
+# Steps to run the project
+
+1. Setup the `.env` variables (you may copy them from `.env.example`)
+
+2.
 
 ```bash
-$ pnpm install
+pnpm i
+
+npx prisma migrate:dev
+
+# Sometimes the prisma client doesn't generate the client in the `generated` folder from the above command
+# So we have to redo it manually
+npx prisma generate
+
+pnpm start:dev
 ```
 
-## Running the app
+You may experience some problems of locating the prisma client, it is because of the new prisma mechanism and updates.
+I didn't 100% double check its correctness to save time
 
-```bash
-# development
-$ pnpm run start
+# Future Improvements
 
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
-```
-
-## Test
-
-```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
-```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
-
----
-
-### List of improvements:
-
-- Separate `password` from `User` model and integrate it into a new model named `Auth` to allow integration of Social Login
+- The `password` in the `User` model can be extracted into a new model called `Auth` so it can facilitate social logins and keep pointing all authentication methods to the same account
+- The usage of PubSub can be used to process orders at a high rate
+- We usually use RateLimiting through AWS, but it can be done on the NestJS level
+- Microservices can be integrated so we can split the `User`, `Location` and `Order` modules into separate instances
+- We can prefix the API url with `/api/v1` to enable version control, but I didn't want to over-engineer this exercise
