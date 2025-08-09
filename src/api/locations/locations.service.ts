@@ -195,7 +195,6 @@ export class LocationsService {
           return acc + availability.product.price * quantity;
         }, 0);
 
-        // Create the order
         const order = await tx.order.create({
           data: {
             discountCodeId: dto.discountCodeId,
@@ -218,7 +217,6 @@ export class LocationsService {
           }),
         });
 
-        /* Decrement per ordered quantity using a VALUES table joined by productId */
         const valueRows = Object.entries(productIdToQuantityMapping).map(
           ([productId, qty]) => Prisma.sql`(${Number(productId)}, ${qty})`,
         );
