@@ -74,20 +74,21 @@ model Location {
   name    String
   address String
   active  Boolean @default(true)
+  taxes   Float?
 
   openingHours        OpeningHours[]
   closingRules        ClosingRules[]
   productAvailability ProductLocationAvailability[]
+  orders              Order[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Product {
-  id       Int    @id @default(autoincrement())
-  name     String
-  price    Float
-  quantity Int
+  id    Int    @id @default(autoincrement())
+  name  String
+  price Float
 
   locationAvailability ProductLocationAvailability[]
   orders               OrderProducts[]
@@ -106,18 +107,6 @@ model ProductLocationAvailability {
 
   product  Product  @relation(fields: [productId], references: [id])
   location Location @relation(fields: [locationId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model OrderProducts {
-  id        Int @id @default(autoincrement())
-  orderId   Int
-  productId Int
-
-  order   Order   @relation(fields: [orderId], references: [id])
-  product Product @relation(fields: [productId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -144,15 +133,34 @@ model DiscountCode {
   updatedAt DateTime @updatedAt
 }
 
+model OrderProducts {
+  id        Int @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  quantity  Int
+
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Order {
   id             Int         @id @default(autoincrement())
   status         OrderStatus @default(ISSUED)
   userId         Int
   discountCodeId Int?
-  taxes          Float?
+  totalPrice     Float
+
+  locationId Int
+  location   Location @relation(fields: [locationId], references: [id])
 
   discountCode DiscountCode? @relation(fields: [discountCodeId], references: [id])
 
   user     User            @relation(fields: [userId], references: [id])
   products OrderProducts[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
