@@ -71,3 +71,9 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](LICENSE).
+
+---
+
+### List of improvements:
+
+- Separate `password` from `User` model and integrate it into a new model named `Auth` to allow integration of Social Login

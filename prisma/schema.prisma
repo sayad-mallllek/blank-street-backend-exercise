@@ -13,3 +13,146 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum AuthType {
+  LOCAL
+  GOOGLE
+  FACEBOOK
+}
+
+enum UserRole {
+  Customer
+  Admin
+}
+
+enum OrderStatus {
+  ISSUED
+  PROCESSING
+  CANCELLED
+  COMPLETED
+}
+
+model User {
+  id       Int      @id @default(autoincrement())
+  email    String   @unique
+  name     String
+  password String
+  role     UserRole @default(Customer)
+
+  orders Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OpeningHours {
+  id         Int      @id @default(autoincrement())
+  location   Location @relation(fields: [locationId], references: [id])
+  locationId Int
+  days       String[]
+
+  openTime  DateTime
+  closeTime DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ClosingRules {
+  id         Int      @id @default(autoincrement())
+  location   Location @relation(fields: [locationId], references: [id])
+  locationId Int
+  from       DateTime
+  to         DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Location {
+  id      Int     @id @default(autoincrement())
+  name    String
+  address String
+  active  Boolean @default(true)
+
+  openingHours        OpeningHours[]
+  closingRules        ClosingRules[]
+  productAvailability ProductLocationAvailability[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id       Int    @id @default(autoincrement())
+  name     String
+  price    Float
+  quantity Int
+
+  locationAvailability ProductLocationAvailability[]
+  orders               OrderProducts[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProductLocationAvailability {
+  id       Int     @id @default(autoincrement())
+  active   Boolean @default(true)
+  quantity Int
+
+  productId  Int
+  locationId Int
+
+  product  Product  @relation(fields: [productId], references: [id])
+  location Location @relation(fields: [locationId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OrderProducts {
+  id        Int @id @default(autoincrement())
+  orderId   Int
+  productId Int
+
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum DiscountCodeType {
+  PRICE
+  PERCENTAGE
+}
+
+model DiscountCode {
+  id         Int              @id @default(autoincrement())
+  code       String           @unique
+  percentage Float?
+  price      Float?
+  type       DiscountCodeType
+  quantity   Int?
+  limited    Boolean          @default(false)
+  active     Boolean          @default(true)
+
+  orders Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id             Int         @id @default(autoincrement())
+  status         OrderStatus @default(ISSUED)
+  userId         Int
+  discountCodeId Int?
+  taxes          Float?
+
+  discountCode DiscountCode? @relation(fields: [discountCodeId], references: [id])
+
+  user     User            @relation(fields: [userId], references: [id])
+  products OrderProducts[]
+}
